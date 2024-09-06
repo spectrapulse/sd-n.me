@@ -22,16 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
-      - uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/spectrapulse/sd-n.me
-          tags: type=raw,value=${{ matrix.arch }}
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: metadata
+        with:
+          images: ghcr.io/spectrapulse/sd-n.me
+          tags: |
+            type=raw,value=${{ matrix.arch }}
       - uses: docker/build-push-action@v5
         with:
           push: true
@@ -50,4 +51,4 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker buildx imagetools create --tag=ghcr.io/spectrapulse/sd-n.me:{amd64,arm64v8} ghcr.io/spectrapulse/sd-n.me:latest
+      - run: docker buildx imagetools create --tag=${IMAGE}:{amd64,arm64v8} ${IMAGE}:latest
