@@ -30,7 +30,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: metadata
         with:
-          images: ghcr.io/spectrapulse/sd-n.me
+          images: ghcr.io/spectrapulse/sd-n-dot-me
           tags: |
             type=raw,value=${{ matrix.arch }}
       - uses: docker/build-push-action@v5
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build]
     env:
-      IMAGE: ghcr.io/spectrapulse/sd-n.me
+      IMAGE: ghcr.io/spectrapulse/sd-n-dot-me
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
