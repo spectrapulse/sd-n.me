@@ -51,4 +51,4 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker buildx imagetools create --tag=${IMAGE}:{amd64,arm64v8} ${IMAGE}:latest
+      - run: docker buildx imagetools create --tag ${IMAGE}:latest ${IMAGE}:{amd64,arm64v8}
