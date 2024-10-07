@@ -3,8 +3,8 @@ name: Build image(s)
 on: [ push ]
 
 env:
-  IMAGE: ghcr.io/spectrapulse/sd-n.me
-  
+    IMAGE: ghcr.io/spectrapulse/sd-n.me
+      
 permissions:
     packages: write
     contents: read
@@ -13,6 +13,10 @@ jobs:
   build:
     name: Build image
     runs-on: ubuntu-20.04
+    outputs:
+      # https://github.com/actions/runner/issues/2372
+      # https://stackoverflow.com/questions/73797254/environment-variables-in-github-actions/74217028#74217028
+      image: ${{ env.IMAGE }}
     strategy:
       fail-fast: true
       matrix:
@@ -52,7 +56,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [ build ]
     env: 
-      IMAGE: ${{ env.IMAGE }}
+      IMAGE: ${{ needs.build.outputs.image }}
     steps: 
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -62,4 +66,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           docker buildx imagetools create \
-            --tag ${{ env.IMAGE }}:latest ${{ env.IMAGE }}:{amd64,i386,arm{32v{6,7},64v8}}
+            --tag ${IMAGE}:latest ${IMAGE}:{amd64,i386,arm{32v{6,7},64v8}}
