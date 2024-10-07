@@ -62,4 +62,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           docker buildx imagetools create \
-            --tag ${IMAGE}:latest ${IMAGE}:{amd64,i386,arm{32v{6,7},64v8}}
+            --tag ${{ env.IMAGE }}:latest ${{ env.IMAGE }}:{amd64,i386,arm{32v{6,7},64v8}}
