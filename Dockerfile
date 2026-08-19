@@ -1,3 +1,3 @@
-FROM nginx
+FROM nginxinc/nginx-unprivileged:mainline
 COPY ./src /usr/share/nginx/html
-EXPOSE 80/tcp
+EXPOSE 8080/tcp

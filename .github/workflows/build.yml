@@ -1,69 +1,40 @@
-name: Build image(s)
+name: Build and Push Image
 
-on: [ push ]
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+  packages: write
 
 env:
-    IMAGE: ghcr.io/spectrapulse/sd-n.me
-      
-permissions:
-    packages: write
-    contents: read
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
-    name: Build image
-    runs-on: ubuntu-20.04
-    outputs:
-      # https://github.com/actions/runner/issues/2372
-      # https://stackoverflow.com/questions/73797254/environment-variables-in-github-actions/74217028#74217028
-      image: ${{ env.IMAGE }}
-    strategy:
-      fail-fast: true
-      matrix:
-        arch: [ amd64, i386, arm32v6, arm32v7, arm64v8 ]
-        include:
-          - arch: amd64
-            platform: linux/amd64
-          - arch: i386
-            platform: linux/i386
-          - arch: arm32v6
-            platform: linux/arm/v6
-          - arch: arm32v7
-            platform: linux/arm/v7
-          - arch: arm64v8
-            platform: linux/arm64
-    steps: 
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/metadata-action@v5
-        id: image-metadata
-        with: 
-          images: ${{ env.IMAGE }}
-          tags: |
-            type=raw,value=${{ matrix.arch }}
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: ${{ matrix.platform }}
-          tags: ${{ steps.image-metadata.outputs.tags }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
 
-  merge:
-    runs-on: ubuntu-20.04
-    needs: [ build ]
-    env: 
-      IMAGE: ${{ needs.build.outputs.image }}
-    steps: 
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          docker buildx imagetools create \
-            --tag ${IMAGE}:latest ${IMAGE}:{amd64,i386,arm{32v{6,7},64v8}}
+    - uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: docker/metadata-action@v5
+      id: meta
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=latest
+          type=sha,format=short
+
+    - uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
